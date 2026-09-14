@@ -5,6 +5,7 @@ import mysql.connector
 from lxml import html
 import time, random
 import logging
+import csv
 
 #=============== objects ================
 helper = Helper()
@@ -37,7 +38,7 @@ search_bt = wait.until(
 )
 
 page = 1
-pages = 20
+pages = 10
 while page <= pages:
     logging.info(f"Starting Page {page}")
     endpoint = f"https://www.yellowpages.com/los-angeles-ca/restaurants?page={page}"
@@ -75,4 +76,31 @@ fetch( arguments[0], {
         listing_url = safe_find(con, ".//a[@class='business-name']//@href")
         if location is None:
             continue
+        info = (name, phone, location, website, listing_url)
 
+
+        query = '''
+INSERT IGNORE INTO yellow(namee, phone, location, website, listing_url)
+VALUES(%s, %s, %s, %s, %s)
+'''
+        cursor.execute(query, info)
+        conn.commit()
+        print(f"business info {index + 1} added")
+
+    if page == pages:
+        logging.info("Pages to be scraped is Reached")
+        break
+
+    time.sleep(random.uniform(2.5, 5.5))
+    page += 1
+
+query1 = "SELECT * FROM yellow"
+cursor.execute(query1)
+data = cursor.fetchall()
+
+with open("restuarants.csv", "w", newline="", encoding='utf-8') as file:
+    writer = csv.writer(file)
+    writer.writerow(["Business Name", "Phone", "Location(Los angeles)", "Website", "Listing_URL"])
+    writer.writerows(data)
+
+logging.info("SCRAPING IS SUCCESSFUL")
