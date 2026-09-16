@@ -1,0 +1,6 @@
+# Below are the packages you have to install before running the scraper.
+
+selenium
+undetected-chromedriver
+mysql-connector-python
+lxml
